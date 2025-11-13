@@ -63,6 +63,7 @@ class GraphClient:
         payload = {
             "changeType": "created",
             "notificationUrl": f"{os.getenv('WEBHOOK_BASE_URL')}/api/webhook",
+            "lifecycleNotificationUrl": f"{os.getenv('WEBHOOK_BASE_URL')}/api/webhook",
             "resource": f"/users/{user_id}/chats/getAllMessages",
             "expirationDateTime": expiration_time,
             "clientState": os.getenv("SUBSCRIPTION_CLIENT_STATE"),

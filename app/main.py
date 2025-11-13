@@ -19,6 +19,7 @@ class Notification(BaseModel):
     subscriptionId: str
     clientState: str
     resource: str
+    lifecycleEvent: Optional[str] = None  # <-- เพิ่ม field นี้
 
 
 class WebhookPayload(BaseModel):
@@ -49,6 +50,10 @@ async def handle_webhook(request: Request, background_tasks: BackgroundTasks):
 # --- Background Task ---
 async def process_notifications(payload: WebhookPayload):
     for notif in payload.value:
+        if notif.lifecycleEvent:
+            print(f"Received lifecycle notification: {notif.lifecycleEvent}")
+            continue  # ข้ามไป ไม่ต้องทำอะไรต่อ
+
         if notif.clientState != os.getenv("SUBSCRIPTION_CLIENT_STATE"):
             print("Invalid clientState received. Ignoring.")
             continue
