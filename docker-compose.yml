@@ -11,9 +11,9 @@ services:
     network_mode: "host"
 
   caddy:
-    image: caddy:2-alpine
+    image: caddy:latest
     container_name: caddy-proxy
-    # restart: always # นำกลับมาใส่ได้เลย
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
