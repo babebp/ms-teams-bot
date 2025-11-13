@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  teams-bot:
+    build: .
+    container_name: teams-mirror-bot-app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      # Map container port 8000 to VM port 8000
+      - "127.0.0.1:8000:8000"
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
