@@ -1,41 +1,28 @@
 version: "3.8"
 
 services:
-  # Service ที่ 1: FastAPI App ของคุณ
   teams-bot:
     build: .
     container_name: teams-mirror-bot-app
-    restart: always
+    restart: always # นำกลับมาใส่ได้เลย
     env_file:
       - .env
-    # ไม่ต้องมี ports: อีกต่อไป! เพราะ Caddy จะคุยผ่าน internal network
-    networks:
-      - caddy-net
+    # เปลี่ยน Network config เป็น host mode
+    network_mode: "host"
 
-  # Service ที่ 2: Caddy Reverse Proxy
   caddy:
-    image: caddy:2-alpine # ใช้ Caddy image อย่างเป็นทางการ
+    image: caddy:2-alpine
     container_name: caddy-proxy
-    restart: always
+    # restart: always # นำกลับมาใส่ได้เลย
     ports:
-      - "80:80" # เปิด Port 80 ของ Host ไปยัง Container
-      - "443:443" # เปิด Port 443 ของ Host ไปยัง Container
+      - "80:80"
+      - "443:443"
     volumes:
-      # Mount Caddyfile เข้าไปใน container
       - ./Caddyfile:/etc/caddy/Caddyfile
-      # สร้าง volume เพื่อเก็บ SSL certificates และข้อมูลอื่นๆ ของ Caddy
-      # เพื่อให้ certificate ไม่หายไปเมื่อ container ถูกสร้างใหม่
       - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - caddy-net
+    # เพิ่ม extra_hosts เพื่อให้ Caddy รู้จัก IP ของ Host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
-# กำหนด Network ที่จะให้ service ทั้งสองคุยกัน
-networks:
-  caddy-net:
-    driver: bridge
-
-# กำหนด Volume ที่จะใช้เก็บข้อมูลถาวรของ Caddy
 volumes:
   caddy_data:
-  caddy_config:
