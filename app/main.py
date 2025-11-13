@@ -33,18 +33,32 @@ MY_USER_ID = None
 # --- Webhook Endpoint ---
 @app.post("/api/webhook")
 async def handle_webhook(request: Request, background_tasks: BackgroundTasks):
+    # --- ส่วนที่ 1: จัดการ Validation Request ก่อนเสมอ ---
+    # ตรวจสอบว่ามี validationToken ใน query params หรือไม่
     validation_token = request.query_params.get("validationToken")
     if validation_token:
+        # ถ้ามี ให้ตอบกลับด้วย token นั้นทันที พร้อม status 200 OK
+        print("Received validation request. Responding with token.")
         return Response(
             content=validation_token, media_type="text/plain", status_code=200
         )
 
+    # --- ส่วนที่ 2: ถ้าไม่ใช่ Validation Request ก็จะเป็น Notification จริง ---
+    # เราจะพยายามอ่าน body เป็น JSON
     try:
-        payload = WebhookPayload(**(await request.json()))
+        payload_json = await request.json()
+        payload = WebhookPayload(**payload_json)
+
+        # ส่งไปประมวลผลเบื้องหลังเพื่อตอบกลับ Microsoft ให้เร็วที่สุด
         background_tasks.add_task(process_notifications, payload)
+
+        # ตอบกลับด้วย 202 Accepted เพื่อบอกว่า "ได้รับเรื่องแล้ว"
         return Response(status_code=202)
-    except Exception:
-        return Response(status_code=400)
+
+    except Exception as e:
+        # ถ้าอ่าน JSON ไม่ได้ หรือมีปัญหาอื่นๆ
+        print(f"Error processing notification payload: {e}")
+        return Response(status_code=400)  # Bad Request
 
 
 # --- Background Task ---
