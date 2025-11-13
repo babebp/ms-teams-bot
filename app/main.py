@@ -91,7 +91,7 @@ async def startup_event():
         MY_USER_ID = me_response.json()["id"]
         print(f"Identified as user: {MY_USER_ID}")
         # Clean up old subscriptions and create a new one
-        await graph_client.delete_all_subscriptions()
+        # await graph_client.delete_all_subscriptions()
         await graph_client.create_subscription(MY_USER_ID)
     else:
         print("CRITICAL: Could not get user info. Subscription setup failed.")
